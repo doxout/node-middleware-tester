@@ -1,5 +1,5 @@
 /**
- * # Middleware tester
+ * # api
  */
 
 var through = require('through');
