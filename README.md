@@ -42,7 +42,6 @@ t.test('post', function(t) {
 
 # api
 
-
 # module.exports(middleware)
 
 > Construct a middleware tester
@@ -140,9 +139,7 @@ mwtest.post('/a', {param: 'val'}, function(err, res) {
 `{Stream}` - duplex stream. Writes to request, reads from response.
 
 
-<a name="self"></a>
-
-# self.getJSON(url, query, opt, done)
+# tester.getJSON(url, query, opt, done)
 
 > Send a GET request to the middleware expecting JSON response.
 

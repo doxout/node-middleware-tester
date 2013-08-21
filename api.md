@@ -8,7 +8,7 @@ _Source: [index.js](/index.js)_
 - <a name="toc_testerrequestopt-opturl-optmethod-optquery-optbody-optheaders-optjson-done"></a><a name="toc_tester"></a>[tester.request](#testerrequestopt-opturl-optmethod-optquery-optbody-optheaders-optjson-done)
 - <a name="toc_testergeturl-query-optmethod-optbody-optheaders-optjson-done"></a>[tester.get](#testergeturl-query-optmethod-optbody-optheaders-optjson-done)
 - <a name="toc_testerposturl-body-optmethod-optbody-optheaders-optjson-done"></a>[tester.post](#testerposturl-body-optmethod-optbody-optheaders-optjson-done)
-- <a name="toc_selfgetjsonurl-query-optmethod-optbody-optheaders-optjson-done"></a><a name="toc_self"></a>[self.getJSON](#selfgetjsonurl-query-optmethod-optbody-optheaders-optjson-done)
+- <a name="toc_testergetjsonurl-query-optmethod-optbody-optheaders-optjson-done"></a>[tester.getJSON](#testergetjsonurl-query-optmethod-optbody-optheaders-optjson-done)
 - <a name="toc_testerpostjsonurl-body-optmethod-optbody-optheaders-optjson-done"></a>[tester.postJSON](#testerpostjsonurl-body-optmethod-optbody-optheaders-optjson-done)
 
 <a name="module"></a>
@@ -114,9 +114,7 @@ mwtest.post('/a', {param: 'val'}, function(err, res) {
 
 <sub>Go: [TOC](#tableofcontents) | [tester](#toc_tester)</sub>
 
-<a name="self"></a>
-
-# self.getJSON(url, query, opt.method, opt.body, opt.headers, opt.json, done)
+# tester.getJSON(url, query, opt.method, opt.body, opt.headers, opt.json, done)
 
 > Send a GET request to the middleware expecting JSON response.
 
@@ -142,7 +140,7 @@ mwtest.get('/a', {param: 'val'}, function(err, res) {
 
 `{Stream}` - Response stream.
 
-<sub>Go: [TOC](#tableofcontents) | [self](#toc_self)</sub>
+<sub>Go: [TOC](#tableofcontents) | [tester](#toc_tester)</sub>
 
 # tester.postJSON(url, body, opt.method, opt.body, opt.headers, opt.json, done)
 
