@@ -1,0 +1,28 @@
+{
+  "name": "middleware-tester",
+  "version": "0.0.0",
+  "description": "Test your middleware with fake requests",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "flask-router-plus": "~0.2.7",
+    "tap": "~0.4.4"
+  },
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "keywords": [
+    "test",
+    "middleware",
+    "fake",
+    "requests"
+  ],
+  "author": "spion",
+  "license": "MIT",
+  "dependencies": {
+    "duplexer": "~0.1.1",
+    "through": "~2.3.4"
+  }
+}
