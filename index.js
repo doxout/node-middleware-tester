@@ -137,7 +137,7 @@ module.exports = function create(middleware) {
         opt.url = url;
         opt.method = 'GET';
         opt.query = query;
-        return self.request(opt, done);
+        return tester.request(opt, done);
     };
 
     /**
@@ -166,7 +166,7 @@ module.exports = function create(middleware) {
         opt.url = url;
         opt.method = 'POST';
         opt.body = body;
-        return self.request(opt, done);
+        return tester.request(opt, done);
     };
 
     /**
@@ -187,8 +187,7 @@ module.exports = function create(middleware) {
      * @param {Function} done - callback(err, response)
      * @return {Stream} - Response stream. 
      */
- 
-    self.getJSON = function(url, query, opt, done) {
+    tester.getJSON = function(url, query, opt, done) {
         if (!done) { 
             done = opt; 
             opt = {}; 
@@ -198,7 +197,7 @@ module.exports = function create(middleware) {
             query = {};
         }
         opt.json = true;
-        return self.get(url, query, opt, done); 
+        return tester.get(url, query, opt, done); 
     };
 
     /**
@@ -225,7 +224,7 @@ module.exports = function create(middleware) {
             opt = {}; 
         }
         opt.json = true; 
-        return self.post(url, body, opt, done);
+        return tester.post(url, body, opt, done);
     };
 
 
