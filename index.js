@@ -5,6 +5,7 @@
 var through = require('through');
 var duplexer = require('duplexer');
 var P = require('bluebird');
+var _ = require('lodash');
 
 function lowerify(obj) {
     var res = {};
@@ -38,20 +39,7 @@ function response() {
     return self;
 }
 
-function replaceAll(str, context, opt) {
-    var reg = /:([^\/]+)/;
-    var match;
-    var names = {};
-    while ((match = str.match(reg))) {
-        var name = match[1], inner = match[0];
-        str = str.substr(0, match.index) + context[name]
-            + str.substr(match.index + inner.length);
-        names[name] = true;
-    }
-    return str;
-}
-
-function request(opt) {
+function request(opt, extra) {
     var self = through();
     self.httpVersion = '1.1';
 
@@ -70,16 +58,33 @@ function request(opt) {
     self.header = function(h) {
         return self.heades[h.toLowerCase()]
     }
+    if (extra) _.merge(self, extra);
     return self;
 }
+
+function replaceAll(str, context, opt) {
+    var reg = /:([^\/]+)/;
+    var match;
+    var names = {};
+    while ((match = str.match(reg))) {
+        var name = match[1], inner = match[0];
+        str = str.substr(0, match.index) + context[name]
+            + str.substr(match.index + inner.length);
+        names[name] = true;
+    }
+    return str;
+}
+
+
 
 /**
  * Construct a middleware tester
  *
  * @param {Function} middleware - the middleware function
- * @return {Tester} tester - the middleware tester
+ * @param {Object} topopts - extra request options
+ * @return {Tester} the middleware tester
  */
-module.exports = function create(middleware) {
+module.exports = function create(middleware, extra) {
     var tester = {};
     /**
      * Send a request to the middleware
@@ -101,7 +106,7 @@ module.exports = function create(middleware) {
      * @return {Stream} - duplex stream. Writes to request, reads from response.
      */
     tester.request = function(opt, done) {
-        var req = request(opt),
+        var req = request(opt, extra),
             res = response();
 
         res.on('data', function resData(d) {
