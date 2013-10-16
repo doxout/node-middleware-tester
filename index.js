@@ -5,6 +5,7 @@
 var through = require('through');
 var duplexer = require('duplexer');
 var P = require('bluebird');
+P.longStackTraces();
 var _ = require('lodash');
 
 function lowerify(obj) {
