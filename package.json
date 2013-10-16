@@ -23,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "duplexer": "~0.1.1",
-    "through": "~2.3.4"
+    "through": "~2.3.4",
+    "bluebird": "~0.8.5-0"
   }
 }

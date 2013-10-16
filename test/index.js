@@ -29,3 +29,10 @@ t.test('post', function(t) {
     });   
 });
 
+t.test('promise', function(t) {
+    tester.postJSONAsync('/post', {a: 1, b: 2}).then(function(res) {
+        t.equals(res.body.a, 1);
+        t.end();
+    });
+});
+      

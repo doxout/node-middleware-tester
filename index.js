@@ -4,6 +4,7 @@
 
 var through = require('through');
 var duplexer = require('duplexer');
+var P = require('bluebird');
 
 function lowerify(obj) {
     var res = {};
@@ -37,14 +38,29 @@ function response() {
     return self;
 }
 
+function replaceAll(str, context, opt) {
+    var reg = /:([^\/]+)/;
+    var match;
+    var names = {};
+    while ((match = str.match(reg))) {
+        var name = match[1], inner = match[0];
+        str = str.substr(0, match.index) + context[name]
+            + str.substr(match.index + inner.length);
+        names[name] = true;
+    }
+    return str;
+}
+
 function request(opt) {
     var self = through();
     self.httpVersion = '1.1';
 
+
     var querystr = urlify(opt.query || {});
     if (querystr.length) querystr = '?' + querystr;
     
-    self.originalUrl = opt.url;
+    self.originalUrl = replaceAll(opt.url, opt.query);
+
     self.url = opt.url + querystr;
     self.query = opt.query;
     self.method = opt.method;
@@ -227,8 +243,10 @@ module.exports = function create(middleware) {
         return tester.post(url, body, opt, done);
     };
 
+    P.promisifyAll(tester);
 
     return tester;
 };
+
 
 
