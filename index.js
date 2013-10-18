@@ -27,6 +27,7 @@ function urlify(obj) {
 
 function response() {
     var self = through();
+    self.code = 200;
     self.writeHead = function(code, reason, headers) {
         if (!headers) { 
             headers = reason;
@@ -44,18 +45,17 @@ function request(opt, extra) {
     var self = through();
     self.httpVersion = '1.1';
 
-
     var querystr = urlify(opt.query || {});
     if (querystr.length) querystr = '?' + querystr;
     
     self.originalUrl = replaceAll(opt.url, opt.query);
 
-    self.url = opt.url + querystr;
+    self.url = self.originalUrl + querystr;
     self.query = opt.query;
     self.method = opt.method;
     self.body = opt.body;
     self.headers = lowerify(opt.headers || {});
-
+    self.session = {};
     self.header = function(h) {
         return self.heades[h.toLowerCase()]
     }
@@ -63,7 +63,7 @@ function request(opt, extra) {
     return self;
 }
 
-function replaceAll(str, context, opt) {
+function replaceAll(str, context) {
     var reg = /:([^\/]+)/;
     var match;
     var names = {};
@@ -115,8 +115,14 @@ module.exports = function create(middleware, extra) {
         });
         res.on('end', function resDone() {
             res.body = res.body.join('');
+            var unparsed = res.body;
             if (opt.json) res.body = JSON.parse(res.body);
-            if (done) done(null, res);
+            var err = null;
+            if (res.code != 200) {
+               var msg = res.body.stack || unparsed;
+               err = new Error("MW response, code " + res.code + ' ' + msg);
+            }
+            if (done) done(err, res);
         });
 
         middleware(req, res, function(err) {
