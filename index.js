@@ -7,6 +7,7 @@ var duplexer = require('duplexer');
 var P = require('bluebird');
 P.longStackTraces();
 var _ = require('lodash');
+var http = require('http');
 
 function lowerify(obj) {
     var res = {};
@@ -25,19 +26,36 @@ function urlify(obj) {
     return vals.join('&');
 }
 
-function response() {
-    var self = through();
-    self.code = 200;
+function response(req) {
+    var self = through(); //new http.ServerResponse(req);
+    self.shouldKeepAlive = false;
+    self.statusCode = self.code = 200;
+    self.headers = {};
     self.writeHead = function(code, reason, headers) {
         if (!headers) { 
             headers = reason;
             reason = '';
         }
         self.code = code;
-        self.headers = headers;
+        for (var key in headers) {
+            self.headers[key] = headers[key];
+        }
         self.reason = reason;
     }
+    self.setHeader = function(key, val) {
+        self.headers[key] = val;
+    }
     self.body = [];
+    self.on('data', function resReadable(d) {
+        self.body.push(d.toString());
+        /*var data;
+        while ((data = self.read())) {
+            console.log(data);
+            self.body.push(data.toString());
+        }*/
+    });
+
+
     return self;
 }
 
@@ -57,9 +75,23 @@ function request(opt, extra) {
     self.headers = lowerify(opt.headers || {});
     self.session = {};
     self.header = function(h) {
-        return self.heades[h.toLowerCase()]
+        return self.headers[h.toLowerCase()]
+    }
+    self.setHeader = function(key, val) {
+        self.headers[key.toLowerCase()] = val;
+    }
+    self.pipesCount = 0;
+    self._readableState = {
+        flowing:true
+    }
+    var oldpipe = self.pipe;
+    self.pipe = function() {
+        "use strict";
+        self.pipesCount++;
+        oldpipe.apply(this, arguments);
     }
     if (extra) _.merge(self, extra);
+
     return self;
 }
 
@@ -108,31 +140,53 @@ module.exports = function create(middleware, extra) {
      */
     tester.request = function(opt, done) {
         var req = request(opt, extra),
-            res = response();
+            res = response(req);
 
-        res.on('data', function resData(d) {
-            res.body.push(d.toString())
-        });
+        var expectedCode = 200;
+        var p = P.pending();
+        req.on('error', p.reject.bind(p));
+        res.on('error', p.reject.bind(p));
         res.on('end', function resDone() {
-            res.body = res.body.join('');
-            var unparsed = res.body;
-            if (opt.json) res.body = JSON.parse(res.body);
-            var err = null;
-            if (res.code != 200) {
-               var msg = res.body.stack || unparsed;
-               err = new Error("MW response, code " + res.code + ' ' + msg);
+            var unparsed = res.body = res.body.join('');
+            if (opt.json) try {
+                res.body = JSON.parse(res.body);
+            } catch (e) {
+                res.body = e;
             }
+            var err = null;
+            if (res.code != expectedCode) {
+                var msg = res.body.stack || unparsed;
+                err = new Error("HTTP code " + res.code + ' ' + msg);
+            }
+            p.asCallback(err, res);
             if (done) done(err, res);
         });
 
+        var ret = duplexer(req, res);
         middleware(req, res, function(err) {
             if (done) done(err, res);
         }); 
 
-        if (req.body) 
-            req.end(urlify(req.body));
+        if (req.body) {
+            req.push(urlify(req.body));
+            req.push(null);
+        }
 
-        return duplexer(req, res);       
+        ret.on('pipe', function(src) {
+            req.length = src.length;
+            if (src.length) 
+                req.setHeader('content-length', src.length);
+        });
+
+
+        ret.expect = function(code) {
+            expectedCode = code;
+            return ret;
+        }
+        ret.then = function(fval, ferr) {
+            return p.promise.then(fval, ferr);
+        }
+        return ret;
     };
 
     /**
@@ -154,17 +208,19 @@ module.exports = function create(middleware, extra) {
      * @return {Stream} - Response stream. 
      */
     tester.get = function(url, query, opt, done) {
-        if (!done) { 
+        if (!done  && typeof(opt) == 'function') { 
             done = opt; 
             opt = {}; 
         } 
-        if (!done) {
+        if (!done && !opt && typeof(query) == 'function') {
             done = query;
             query = {};
+            opt = {};
         }
+        opt = opt || {};
         opt.url = url;
         opt.method = 'GET';
-        opt.query = query;
+        opt.query = query || {};
         return tester.request(opt, done);
     };
 
@@ -180,17 +236,18 @@ module.exports = function create(middleware, extra) {
      * @param {String} url - Request path
      * @param {Object} body - Optional form data 
      * @param {String} opt.method - GET/POST/PUT etc.
-     * @param {Object} opt.body - Post body (form data, JSON only)
+     * @param {Object} opt.query - Query arguments (in URL)
      * @param {Object} opt.headers - Headers
      * @param {Boolean} opt.json - Interpret response as JSON
      * @param {Function} done - callback(err, response)
      * @return {Stream} - duplex stream. Writes to request, reads from response.
      */
     tester.post = function(url, body, opt, done) {
-        if (!done) { 
+        if (!done && typeof(opt) == 'function') { 
             done = opt; 
             opt = {}; 
         }
+        opt = opt || {};
         opt.url = url;
         opt.method = 'POST';
         opt.body = body;
@@ -216,14 +273,16 @@ module.exports = function create(middleware, extra) {
      * @return {Stream} - Response stream. 
      */
     tester.getJSON = function(url, query, opt, done) {
-        if (!done) { 
+        if (!done  && typeof(opt) == 'function') { 
             done = opt; 
             opt = {}; 
         } 
-        if (!done) {
+        if (!done && !opt && typeof(query) == 'function') {
             done = query;
             query = {};
+            opt = {};
         }
+        opt = opt || {};
         opt.json = true;
         return tester.get(url, query, opt, done); 
     };
@@ -247,10 +306,11 @@ module.exports = function create(middleware, extra) {
      * @return {Stream} - Response stream. 
      */
     tester.postJSON = function(url, body, opt, done) {
-        if (!done) { 
+        if (!done  && typeof(opt) == 'function') { 
             done = opt; 
             opt = {}; 
         }
+        opt = opt || {};
         opt.json = true; 
         return tester.post(url, body, opt, done);
     };
