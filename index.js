@@ -164,6 +164,7 @@ module.exports = function create(middleware, extra) {
 
         var ret = duplexer(req, res);
         middleware(req, res, function(err) {
+            p.asCallback(err, res);
             if (done) done(err, res);
         }); 
 
