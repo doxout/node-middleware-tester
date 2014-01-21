@@ -187,6 +187,7 @@ module.exports = function create(middleware, extra) {
         ret.then = function(fval, ferr) {
             return p.promise.then(fval, ferr);
         }
+        ret.promise = function() { return p.promise; };
         return ret;
     };
 
