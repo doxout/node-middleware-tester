@@ -2,10 +2,9 @@
  * # api
  */
 
-var through = require('through');
-var duplexer = require('duplexer');
+var through = require('through2');
+var duplexer = require('duplexer2');
 var P = require('bluebird');
-P.longStackTraces();
 var _ = require('lodash');
 var http = require('http');
 
@@ -80,18 +79,7 @@ function request(opt, extra) {
     self.setHeader = function(key, val) {
         self.headers[key.toLowerCase()] = val;
     }
-    self.pipesCount = 0;
-    self._readableState = {
-        flowing:true
-    }
-    var oldpipe = self.pipe;
-    self.pipe = function() {
-        "use strict";
-        self.pipesCount++;
-        oldpipe.apply(this, arguments);
-    }
     if (extra) _.merge(self, extra);
-
     return self;
 }
 
