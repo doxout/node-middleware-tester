@@ -59,7 +59,7 @@ module mwtest {
             })
         }
         public port() {
-            // node.d.ts has a broken definition for this.server
+            // node.d.ts has abroken definition for this.server
             return (<net.Server><any>this.server).address().port;
         }
         public ready() { return this._ready; }
@@ -74,7 +74,9 @@ module mwtest {
         }
 
         public address() {
-            return (<net.Server><any>this.server).address();
+            var a = (<net.Server><any>this.server).address();
+            var ip = a.address === '0.0.0.0'?'localhost': a.address;
+            return 'http://' + ip + ':' + a.port;
         }
 
     }
@@ -101,11 +103,6 @@ module mwtest {
             this.extras = extras || {};
         }
 
-        public serverAddress() {
-            var a = this.ts.address();
-            var ip = a.address === '0.0.0.0'?'localhost': a.address;
-            return 'http://' + ip + ':' + a.port;
-        }
         public request(opt: RequestOptions): PromiStream {
             var p            = Promise.defer();
             var expectedCode = 200;
