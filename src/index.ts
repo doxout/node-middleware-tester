@@ -12,7 +12,6 @@ function mwtest(mw:mwtest.IMiddleware): Promise<mwtest.TestableServer> {
     return ts.ready().thenReturn(ts);
 }
 
-
 module mwtest {
 
     export interface IMiddleware {
@@ -54,7 +53,7 @@ module mwtest {
                     req[key] = extra[key];
                 });
                 mw(req, res, err => { if (err) throw err; });
-            })
+            });
             this._ready = new Promise<boolean>((resolve, reject) => {
                 this.server.listen(0, _ => resolve(this._isReady = true));
             })
@@ -70,9 +69,14 @@ module mwtest {
             return new Tester(this, extras);
         }
         public close() {
-            return new Promise((resolve, reject) =>
-                               this.server.close(resolve))
+            return new Promise(
+                (resolve, reject) => this.server.close(resolve));
         }
+
+        public address() {
+            return (<net.Server><any>this.server).address();
+        }
+
     }
 
     function replaceAll(str:string, context:any) {
@@ -89,11 +93,18 @@ module mwtest {
     }
 
     export class Tester {
+
         private ts: TestableServer;
         private extras: any;
         constructor(ts:TestableServer, extras: any) {
             this.ts     = ts;
             this.extras = extras || {};
+        }
+
+        public serverAddress() {
+            var a = this.ts.address();
+            var ip = a.address === '0.0.0.0'?'localhost': a.address;
+            return 'http://' + ip + ':' + a.port;
         }
         public request(opt: RequestOptions): PromiStream {
             var p            = Promise.defer();
@@ -105,21 +116,21 @@ module mwtest {
                 path: replaceAll(opt.url, opt.query),
                 port: this.ts.port(),
                 headers: opt.headers || {}
-            }
+            };
             reqOptions.headers["x-mwtest-extras"] = JSON.stringify(this.extras);
-            var postdata = undefined;
+            var postData;
             if (opt.body != null) {
-                postdata = new Buffer(JSON.stringify(opt.body));
+                postData = new Buffer(JSON.stringify(opt.body));
                 reqOptions.headers['Content-Type'] =
-                    'application/json',
-                reqOptions.headers['Content-Length'] = postdata.length
+                    'application/json';
+                reqOptions.headers['Content-Length'] = postData.length
             }
             if (opt.query != null)
                 reqOptions.path += '?' + qs.stringify(opt.query);
 
             var inp = through(), out = through();
             var req = http.request(reqOptions, (res) => {
-                res.on('error', p.reject.bind(p))
+                res.on('error', p.reject.bind(p));
                 res.pipe(bl(function(err, buf) {
                     if (err) return p.reject(err);
                     var unparsed = res.body = buf.toString();
@@ -139,7 +150,7 @@ module mwtest {
             req.on('error', p.reject.bind(p))
 
             if (opt.body != null || opt.method == 'GET')
-                req.end(postdata);
+                req.end(postData);
             else
                 inp.pipe(req);
             var ret:any = duplexer(inp, out);
@@ -169,6 +180,7 @@ module mwtest {
             return this.request(opt);
         }
         public getJSON(url, query, opt) {
+            console.log(url, query, opt);
             query = query || {};
             opt = opt || {}
             opt.json = true;
@@ -188,5 +200,6 @@ module mwtest {
     }
 
 }
+
 
 export = mwtest;

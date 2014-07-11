@@ -84,9 +84,16 @@ t.test('post-pipe', function(t) {
 
 
 t.test('extras', function(t) {
-    return testerExtras.getJSON('/extras').then(function(res) {
+    var lol = {};
+    return testerExtras.getJSON('/extras', lol).then(function(res) {
         t.ok(res.body.extras.hasThem, 'has extras');
     });
+});
+
+t.test('address', function(t){
+    t.ok(tester.serverAddress().indexOf('http://localhost:') >= 0,
+        "returns server address");
+    t.end();
 });
 
 t.test("close", function(t) {
