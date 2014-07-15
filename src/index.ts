@@ -48,10 +48,10 @@ module mwtest {
             this.server = http.createServer((req, res) => {
                 // For compatibility with express
                 req["originalUrl"] = req.url;
-                var extra = JSON.parse(req.headers["x-mwtest-extras"]);
-                Object.keys(extra).forEach(function(key) {
-                    req[key] = extra[key];
-                });
+                try {
+                    var extra = JSON.parse(req.headers["x-mwtest-extras"]);
+                    Object.keys(extra).forEach(key => { req[key] = extra[key] });
+                } catch (e) { } // no extras
                 mw(req, res, err => { if (err) throw err; });
             });
             this._ready = new Promise<boolean>((resolve, reject) => {
