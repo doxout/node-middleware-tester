@@ -92,7 +92,7 @@ t.test('extras', function(t) {
 
 t.test('address', function(t){
     t.ok(server.address().indexOf('http://localhost:') >= 0,
-        "returns server address");
+       "returns server address:" + server.address());
     t.end();
 });
 

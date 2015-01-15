@@ -1189,6 +1189,7 @@ declare module "assert" {
             actual: any;
             expected: any;
             operator: string;
+            stack: string;
             generatedMessage: boolean;
 
             constructor(options?: {message?: string; actual?: any; expected?: any;
