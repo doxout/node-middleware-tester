@@ -1,6 +1,6 @@
 {
   "name": "middleware-tester",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Test your middleware with fake requests",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -8,8 +8,10 @@
     "test": "test"
   },
   "devDependencies": {
-    "flask-router-plus": "~0.2.7",
-    "connect": "~2.14.2"
+    "@types/bluebird": "^3.5.8",
+    "@types/node": "^8.0.26",
+    "connect": "~2.14.2",
+    "flask-router-plus": "~0.2.7"
   },
   "scripts": {
     "compile": "ntsc src/index.ts -m commonjs --outDir lib",

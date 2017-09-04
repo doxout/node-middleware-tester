@@ -1,5 +1,8 @@
 import http = require('http');
 import Promise = require('bluebird');
+
+import { ReadWriteStream } from "stream";
+
 declare function mwtest(mw: mwtest.IMiddleware): Promise<mwtest.TestableServer>;
 declare module mwtest {
     interface IMiddleware {
@@ -8,9 +11,9 @@ declare module mwtest {
     interface BodyResponse extends http.ServerResponse {
         body: string;
     }
-    interface PromiStream extends Promise.IPromise<BodyResponse>, ReadWriteStream {
+    interface PromiStream extends Promise<BodyResponse>, NodeJS.ReadWriteStream {
         expect: (code: number) => PromiStream;
-        promise: () => Promise.IPromise<BodyResponse>;
+        promise: () => Promise<BodyResponse>;
     }
     interface RequestOptions {
         url: string;
