@@ -1,6 +1,6 @@
 {
   "name": "middleware-tester",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Test your middleware with fake requests",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

@@ -1,8 +1,6 @@
 import http = require('http');
 import Promise = require('bluebird');
 
-import { ReadWriteStream } from "stream";
-
 declare function mwtest(mw: mwtest.IMiddleware): Promise<mwtest.TestableServer>;
 declare module mwtest {
     interface IMiddleware {
