@@ -176,6 +176,13 @@ module mwtest {
             opt.body = body;
             return this.request(opt);
         }
+        public put(url:string, body:any, opt) {
+            opt = opt || {};
+            opt.url = url;
+            opt.method = 'PUT';
+            opt.body = body;
+            return this.request(opt);
+        }
         public getJSON(url, query, opt) {
             console.log(url, query, opt);
             query = query || {};
@@ -188,11 +195,19 @@ module mwtest {
             opt.json = true;
             return this.post(url, body, opt);
         }
+        public putJSON(url, body, opt) {
+            opt = opt || {};
+            opt.json = true;
+            return this.put(url, body, opt);
+        }
         public getJSONAsync(url, query, opt) {
             return this.getJSON(url, query, opt);
         }
         public postJSONAsync(url, body, opt) {
             return this.postJSON(url, body, opt);
+        }
+        public putJSONAsync(url, body, opt) {
+            return this.putJSON(url, body, opt);
         }
     }
 

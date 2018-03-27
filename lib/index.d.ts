@@ -39,13 +39,16 @@ declare module mwtest {
         request(opt: RequestOptions): PromiStream;
         get(url: string, query: any, opt: any): PromiStream;
         post(url: string, body: any, opt: any): PromiStream;
+        put(url: string, body: any, opt: any): PromiStream;
         delete(url: string, query: any, opt: any): PromiStream;
         options(url: string, opt: any): PromiStream;
         getJSON(url: any, query: any, opt: any): PromiStream;
         postJSON(url: any, body: any, opt: any): PromiStream;
+        putJSON(url: any, body: any, opt: any): PromiStream;
         deleteJSON(url: string, query: any, opt: any): PromiStream;
         getJSONAsync(url: any, query: any, opt: any): PromiStream;
         postJSONAsync(url: any, body: any, opt: any): PromiStream;
+        putJSONAsync(url: any, body: any, opt: any): PromiStream;
     }
 }
 export = mwtest;
