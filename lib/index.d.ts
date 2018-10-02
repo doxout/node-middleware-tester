@@ -4,7 +4,7 @@ import Promise = require('bluebird');
 declare function mwtest(mw: mwtest.IMiddleware): Promise<mwtest.TestableServer>;
 declare module mwtest {
     interface IMiddleware {
-        (req: http.ServerRequest, res: http.ServerResponse, handler: (e: Error) => void): void;
+        (req: http.IncomingMessage, res: http.ServerResponse, handler: (e: Error) => void): void;
     }
     interface BodyResponse extends http.ServerResponse {
         body: string;
